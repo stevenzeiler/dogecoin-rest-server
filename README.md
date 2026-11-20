@@ -23,7 +23,7 @@ The README of the day sketched these calls. Addresses below are placeholders, no
 |---|---|
 | `GET /wallet/new` | Generate a new Dogecoin address: `{ address }` |
 | `GET /wallet/new?key=1` | The same, and also return the address's private key (a bad idea over plain HTTP; do not copy it) |
-| `POST /bridges` | Connect a Ripple address to a fresh Dogecoin address. Body: `ripple_address`, `email_address`, `password`. Returns `{ id, email_address, ripple_address, dogecoin_address }` |
+| `POST /bridges` | Connect a Ripple address to a fresh Dogecoin address. Body: `ripple_address`, `email_address`, `password`. README promised `{ id, email_address, ripple_address, dogecoin_address }`; the code returns `{ user, ripple_address, dogecoin_address }` and reads `user`, not `email_address` |
 | `GET /bridges/dogecoin/:dogecoin_address` | Look up the Ripple address bridged to a Dogecoin address |
 | `GET /bridges/ripple/:ripple_address` | Look up the Dogecoin address bridged to a Ripple address |
 
@@ -82,7 +82,7 @@ docs/                           status and banner
 - **2014-03-08:** server with `/wallet/new`, README with the proposed bridge calls.
 - **2014-03-09:** `POST /bridges` and the two lookups implemented.
 - **2014-03-11 to 03-15:** Capistrano, Chef nginx cookbook, nginx upstream. Last commit.
-- 14 commits in a week. The first of a series of 2014 experiments bridging other blockchains into Ripple gateways.
+- 14 commits in a week. One of Steven's 2014 experiments bridging other blockchains into Ripple gateways **(inference)**.
 
 ---
 
