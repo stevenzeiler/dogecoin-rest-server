@@ -1,59 +1,89 @@
-## Dogecoin Ripple Gateway
+<p align="center"><img src="docs/readme/banner.svg" alt="dogecoin-rest-server: send doge, trade it on Ripple" width="100%"></p>
 
-Send dogecoins to your Ripple wallet and trade them on the global
-worldwide crypto Ripple liquidity exchange.
+<p align="center">
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-0.10_era-339933?logo=nodedotjs&logoColor=white">
+  <img alt="Era 2014" src="https://img.shields.io/badge/era-2014-lightgrey">
+  <img alt="Status historical" src="https://img.shields.io/badge/status-historical-orange">
+</p>
 
-This software will interface with the [Ripple Gateway](https://github.com/ripple/ripple-gateway) software.
+> [!NOTE]
+> **Historical project (March 2014). Not maintained and not working as committed.** Written for Node 0.10 and Express 3, in the Dogecoin meme-coin era. `index.js` does not even parse as it stands (see [docs/STATUS.md](docs/STATUS.md)). Kept for the record. Do not deploy it.
 
-### Generating a Dogecoin Address
+# dogecoin-rest-server
 
-    GET /wallet/new
+**Dogecoin Ripple Gateway.** Send dogecoins to your Ripple wallet and trade them on the global worldwide crypto Ripple liquidity exchange.
 
-    {
-      address: "DJVnZpKBFs58dcxjAVzBbVSFdo6nNAC1tj"
-    }
+It is a small Express REST server that would sit next to a Dogecoin daemon: it creates Dogecoin deposit addresses, and bridges each one to a Ripple address through the [Ripple Gateway](https://github.com/ripple/ripple-gateway) software, so that coins sent to the Dogecoin address would show up as IOUs on Ripple. Much bridge, very liquidity.
 
-### Returning the key of an address
+## Planned endpoints
 
-    GET /wallet/new?key=1
+The README of the day sketched these calls. Addresses below are placeholders, not real values.
 
-    {
-      address: "DGR6H2NGP5ksHM3wHnpcw8maUBLuficpd6",
-      key: "QQuvhjUGA173oGsg41od6a259R3vQeZ7HerX3FihTeba67eeDUXB"
-    }
+| Call | What it was meant to do |
+|---|---|
+| `GET /wallet/new` | Generate a new Dogecoin address: `{ address }` |
+| `GET /wallet/new?key=1` | The same, and also return the address's private key (a bad idea over plain HTTP; do not copy it) |
+| `POST /bridges` | Connect a Ripple address to a fresh Dogecoin address. Body: `ripple_address`, `email_address`, `password`. Returns `{ id, email_address, ripple_address, dogecoin_address }` |
+| `GET /bridges/dogecoin/:dogecoin_address` | Look up the Ripple address bridged to a Dogecoin address |
+| `GET /bridges/ripple/:ripple_address` | Look up the Dogecoin address bridged to a Ripple address |
 
-### Connecting a Ripple Address to a Dogecoin Address
+Example (shape only):
 
-    POST /bridges
+```
+GET /wallet/new
+{ address: "<dogecoin address>" }
 
-    {
-      ripple_address: "rMw9urZURf31w89fg7t5aJBQHqE2oyPg6T",
-      email_address: "me@stevenzeiler.com",
-      password: "mySup3rS3cretP@s$w0rd"
-    }
+POST /bridges
+{ ripple_address: "<ripple address>", email_address: "<email>", password: "<password>" }
+```
 
-    ... response ...
+## How it works
 
-    {
-      id: 52,
-      email_address: "me@stevenzeiler.com",
-      ripple_address: "rMw9urZURf31w89fg7t5aJBQHqE2oyPg6T",
-      dogecoin_address: "DGR6H2NGP5ksHM3wHnpcw8maUBLuficpd6"
-    }
+```mermaid
+flowchart LR
+  C[Client] -->|REST| S[Express server, port 5000]
+  S -->|JSON-RPC via node-dogecoin| D[dogecoind]
+  S -->|createUser, createExternalAccount, createRippleAddress| G[Ripple Gateway data adapter]
+  G --- DB[(gateway database)]
+```
 
-### Querying the bridge to look up connected addresses
+`index.js` reads the Dogecoin RPC credentials from the environment (`DOGECOIND_USER`, `DOGECOIND_PASSWORD`), asks `dogecoind` for new addresses, and records the pairing of user, Dogecoin address and Ripple address through a Ripple Gateway data adapter (`ripple-gateway-data-sequelize-adapter`).
 
-    GET /bridges/dogecoin/:dogecoin_address
-    
-    {
-      dogecoin_address: "DGR6H2NGP5ksHM3wHnpcw8maUBLuficpd6",
-      ripple_address: "rMw9urZURf31w89fg7t5aJBQHqE2oyPg6T"
-    }
+## Deploy tooling (sketch)
 
-    GET /bridges/ripple/:ripple_address
-    
-    {
-      ripple_address: "rMw9urZURf31w89fg7t5aJBQHqE2oyPg6T",
-      dogecoin_address: "DGR6H2NGP5ksHM3wHnpcw8maUBLuficpd6"
-    }
+The last commits added deployment scaffolding. All of it is template-level and unfinished:
 
+- **Capistrano 3.1** (`Capfile`, `config/deploy.rb`, `config/deploy/*.rb`): still the stock generated files, with `my_app_name` and `example.com` placeholders.
+- **Chef cookbook** (`cookbooks/nginx/`): installs an nginx site and an Upstart job for the gateway. Note that the recipe refers to a `dogecoin_gateway.conf.erb` template that is not in the repo (only a non-ERB `dogecoin_gateway.conf` is), and the nginx upstream points at port 3000 while the server listens on 5000.
+
+## Install and run (as it would have been)
+
+```
+npm install
+export DOGECOIND_USER=...   # your dogecoind rpcuser
+export DOGECOIND_PASSWORD=...
+node index.js
+```
+
+This needs a running `dogecoind` with RPC enabled and the Ripple Gateway data adapter, neither of which is included. As committed it fails with a syntax error. `npm test` runs `mocha test/`, but there is no `test/` directory.
+
+## Layout
+
+```
+index.js                        the Express server (routes only)
+package.json                    express 3, node-dogecoin, mocha, sinon
+Capfile, Gemfile, config/       stock Capistrano 3.1 scaffolding
+cookbooks/nginx/                Chef recipe and nginx / upstart templates
+docs/                           status and banner
+```
+
+## History
+
+- **2014-03-08:** server with `/wallet/new`, README with the proposed bridge calls.
+- **2014-03-09:** `POST /bridges` and the two lookups implemented.
+- **2014-03-11 to 03-15:** Capistrano, Chef nginx cookbook, nginx upstream. Last commit.
+- 14 commits in a week. The first of a series of 2014 experiments bridging other blockchains into Ripple gateways.
+
+---
+
+Status and what was checked: [docs/STATUS.md](docs/STATUS.md). Notes for coding agents: [AGENTS.md](AGENTS.md).

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-labelledby="t d">
+  <title id="t">dogecoin-rest-server</title>
+  <desc id="d">Banner: dogecoin-rest-server, a Dogecoin to Ripple gateway. A gold coin and a blue ledger chain linked by a bridge.</desc>
+  <style>
+    .title { font: 700 54px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #fff6d6; }
+    .sub { font: 400 26px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #f3d98a; }
+    .small { font: 400 20px ui-monospace, Menlo, Consolas, monospace; fill: #9fb7d9; }
+    .coin { transform-box: fill-box; transform-origin: center; animation: bob 8s ease-in-out infinite; }
+    .link { stroke: #6aa6ff; stroke-width: 4; fill: none; stroke-dasharray: 10 10; animation: flow 6s linear infinite; }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes flow { to { stroke-dashoffset: -80; } }
+    @media (prefers-reduced-motion: reduce) { .coin, .link { animation: none; } }
+  </style>
+  <rect width="1200" height="300" rx="24" fill="#14192b"/>
+  <rect x="3" y="3" width="1194" height="294" rx="22" fill="none" stroke="#2c3556" stroke-width="2"/>
+  <!-- gold coin -->
+  <g class="coin">
+    <circle cx="130" cy="150" r="78" fill="#e0b13a" stroke="#fff0b0" stroke-width="6"/>
+    <circle cx="130" cy="150" r="58" fill="none" stroke="#a97c10" stroke-width="4"/>
+    <text x="130" y="176" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="74" fill="#7a5508">D</text>
+  </g>
+  <!-- ledger chain -->
+  <path class="link" d="M215 150 H985"/>
+  <g fill="#1d3a6e" stroke="#6aa6ff" stroke-width="4">
+    <rect x="1010" y="95" width="56" height="44" rx="8"/>
+    <rect x="1040" y="140" width="56" height="44" rx="8"/>
+    <rect x="1070" y="185" width="56" height="44" rx="8" opacity=".85"/>
+  </g>
+  <text class="title" x="260" y="135">dogecoin-rest-server</text>
+  <text class="sub" x="262" y="185">Send doge, trade it on Ripple. Much bridge.</text>
+  <text class="small" x="262" y="225">Express · node-dogecoin · Ripple Gateway · 2014</text>
+</svg>
